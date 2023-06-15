@@ -123,7 +123,6 @@ namespace WindowsFormsAppTaskFinal
             mainPanel.Controls.Clear();
             if (_user == null && _trackDirector == null) return;
             var userSubclass = _user == null ? _trackDirector.SubclassIdentifier : _user.SubclassIdentifier;
-            Debug.Assert(_user != null, nameof(_user) + " != null");
             var messages = userSubclass.Equals("TrackDirector") ? _trackDirector.Messages : _user.Messages;
             var panelWidth = mainPanel.Width - 40;
             const int barHeight = 40;
@@ -202,6 +201,12 @@ namespace WindowsFormsAppTaskFinal
                     var title = titleTextBox.Text;
                     var content = contentTextBox.Text;
                     var date = DateTime.Now;
+                    if (string.IsNullOrEmpty(recipientEmail) || string.IsNullOrEmpty(title) ||
+                        string.IsNullOrEmpty(content))
+                    {
+                        MessageBox.Show(@"All fields must be filled out!");
+                        return;
+                    }
 
                     // Check if the recipient exists in the system
                     var recipient = _trackDirector.FindUserByEmail(recipientEmail);
@@ -209,10 +214,17 @@ namespace WindowsFormsAppTaskFinal
                     if (recipient != null)
                     {
                         // Create a new message object
-                        var message = new Message(_user.Email, recipientEmail, title, content, date, false);
-
-                        // Add the message to the user's message list
-                        _user.Messages.Add(message);
+                        Message message;
+                        if (_user == null)
+                        {
+                            message = new Message(_trackDirector.Email, recipientEmail, title, content, date, false);
+                            _trackDirector.Messages.Add(message);
+                        }
+                        else
+                        {
+                            message = new Message(_user.Email, recipientEmail, title, content, date, false);
+                            _user.Messages.Add(message);
+                        }
                         if (recipient.SubclassIdentifier.Equals("TrackDirector"))
                             _trackDirector.Messages.Add(message);
                         else
@@ -297,8 +309,8 @@ namespace WindowsFormsAppTaskFinal
             if (messages.Count > 0)
             {
                 var barsPanel = new Panel();
-                barsPanel.Size = new Size(panelWidth, messages.Count * (barHeight + barMargin));
-                barsPanel.Location = new Point(20, sortPanel.Bottom + 10);
+                barsPanel.Size = new Size(panelWidth,sortPanel.Bottom + 10 );
+                barsPanel.Location = new Point(20, messages.Count * (barHeight + barMargin));
                 barsPanel.AutoScroll = true;
                 foreach (var message in messages)
                 {

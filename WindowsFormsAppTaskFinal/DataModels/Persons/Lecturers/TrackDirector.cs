@@ -27,8 +27,12 @@ namespace WindowsFormsAppTaskFinal.DataModels.Persons.Lecturers
         {
             if (Email.Equals(email))
                 return this;
-            return Students.Concat(Persons)
-                .FirstOrDefault(user => user.Email.Equals(email));
+            foreach (var person in Persons.Where(person => person.Email.Equals(email)))
+            {
+                return person;
+            }
+
+            return Students.FirstOrDefault(student => student.Email.Equals(email));
         }
         
         public new string SimplifiedToString()
